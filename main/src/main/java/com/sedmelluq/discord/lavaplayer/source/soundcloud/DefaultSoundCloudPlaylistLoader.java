@@ -35,12 +35,12 @@ public class DefaultSoundCloudPlaylistLoader implements SoundCloudPlaylistLoader
   protected static final String PLAYLIST_URL_REGEX = "^(?:http://|https://|)(?:www\\.|)(?:m\\.|)soundcloud\\.com/([a-zA-Z0-9-_]+)/sets/([a-zA-Z0-9-_]+)(?:\\?.*|)$";
   protected static final Pattern playlistUrlPattern = Pattern.compile(PLAYLIST_URL_REGEX);
 
-  protected final SoundCloudHtmlDataLoader htmlDataLoader;
+  protected final SoundCloudDataLoader  htmlDataLoader;
   protected final SoundCloudDataReader dataReader;
   protected final SoundCloudFormatHandler formatHandler;
 
   public DefaultSoundCloudPlaylistLoader(
-      SoundCloudHtmlDataLoader htmlDataLoader,
+      SoundCloudDataLoader htmlDataLoader,
       SoundCloudDataReader dataReader,
       SoundCloudFormatHandler formatHandler
   ) {
