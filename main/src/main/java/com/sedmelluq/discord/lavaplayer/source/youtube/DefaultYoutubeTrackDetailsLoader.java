@@ -49,7 +49,7 @@ public class DefaultYoutubeTrackDetailsLoader implements YoutubeTrackDetailsLoad
     JsonBrowser mainInfo = loadTrackInfoFromInnertube(httpInterface, videoId, sourceManager);
 
     try {
-      YoutubeTrackJsonData initialData = loadBaseResponse(mainInfo, httpInterface, videoId, sourceManager);
+      YoutubeTrackJsonData initialData = loadBaseResponse(mainInfo, httpInterface, videoId, sourceManager, false);
 
       if (initialData == null) {
         return null;
@@ -68,7 +68,8 @@ public class DefaultYoutubeTrackDetailsLoader implements YoutubeTrackDetailsLoad
       JsonBrowser mainInfo,
       HttpInterface httpInterface,
       String videoId,
-      YoutubeAudioSourceManager sourceManager
+      YoutubeAudioSourceManager sourceManager,
+      boolean RetryInnertube
   ) throws IOException {
     YoutubeTrackJsonData data = YoutubeTrackJsonData.fromMainResult(mainInfo);
     InfoStatus status = checkPlayabilityStatus(data.playerResponse);
@@ -78,9 +79,8 @@ public class DefaultYoutubeTrackDetailsLoader implements YoutubeTrackDetailsLoad
     }
 
     if (status == InfoStatus.EMBED_DISABLED && !RetryInnertube) {
-      RetryInnertube = true;
-      JsonBrowser trackInfo = loadTrackInfoFromInnertube(httpInterface, videoId, sourceManager);
-      return YoutubeTrackJsonData.fromMainResult(trackInfo);
+      JsonBrowser trackInfo = loadTrackInfoFromInnertube(httpInterface, videoId, sourceManager, true);
+      return loadBaseResponse(trackInfo, httpInterface, videoId, sourceManager, true);
     }
 
     if (status == InfoStatus.CONTENT_CHECK_REQUIRED) {
@@ -168,13 +168,13 @@ public class DefaultYoutubeTrackDetailsLoader implements YoutubeTrackDetailsLoad
     return unplayableReason;
   }
 
-  protected JsonBrowser loadTrackInfoFromInnertube(HttpInterface httpInterface, String videoId, YoutubeAudioSourceManager sourceManager) throws IOException {
+  protected JsonBrowser loadTrackInfoFromInnertube(HttpInterface httpInterface, String videoId, YoutubeAudioSourceManager sourceManager, boolean RetryInnertube) throws IOException {
     if (cachedPlayerScript == null) fetchScript(videoId, httpInterface);
 
     YoutubeSignatureCipher playerScriptTimestamp = sourceManager.getSignatureResolver().getCipherKeyAndTimestampFromScript(httpInterface,
             cachedPlayerScript.playerScriptUrl);
     HttpPost post = new HttpPost(PLAYER_URL);
-    StringEntity payload = new StringEntity(String.format((RetryInnertube) ? _PLAYER_PAYLOAD : PLAYER_PAYLOAD , videoId, playerScriptTimestamp.scriptTimestamp), "UTF-8");
+    StringEntity payload = new StringEntity(String.format((RetryInnertube) ? _PLAYER_PAYLOAD : PLAYER_PAYLOAD, videoId, playerScriptTimestamp.scriptTimestamp), "UTF-8");
     post.setEntity(payload);
     try (CloseableHttpResponse response = httpInterface.execute(post)) {
       return processResponse(response);
