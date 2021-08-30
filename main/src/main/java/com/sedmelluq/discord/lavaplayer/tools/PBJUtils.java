@@ -12,7 +12,13 @@ public class PBJUtils {
 
     public static String getYouTubeThumbnail(JsonBrowser videoData, String videoId) {
         List<JsonBrowser> thumbnails = videoData.get("thumbnail").get("thumbnails").values();
-        if (!thumbnails.isEmpty()) return thumbnails.get(thumbnails.size() - 1).get("url").text();
+        if (!thumbnails.isEmpty()){
+            String lastThumbnail = thumbnails.get(thumbnails.size() - 1).get("url").text();
+            if(lastThumbnail.contains("maxresdefault"))return lastThumbnail
+            ArrayList[] bestThumbnails = thumbnails.filter(t -> t.get("url").text().contains("?sqp=")).toArray();
+            if(!bestThumbnails.isEmpty())return bestThumbnails.get(bestThumbnails.size() - 1).get("url").text()
+            return lastThumbnail
+        }
         return String.format("https://i.ytimg.com/vi_webp/%s/maxresdefault.webp", videoId);
     }
 

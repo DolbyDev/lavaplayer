@@ -17,6 +17,7 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 
 import static com.sedmelluq.discord.lavaplayer.source.youtube.YoutubeConstants.PLAYER_PAYLOAD;
+import static com.sedmelluq.discord.lavaplayer.source.youtube.YoutubeConstants._PLAYER_PAYLOAD;
 import static com.sedmelluq.discord.lavaplayer.source.youtube.YoutubeConstants.PLAYER_URL;
 import static com.sedmelluq.discord.lavaplayer.source.youtube.YoutubeConstants.VERIFY_AGE_PAYLOAD;
 import static com.sedmelluq.discord.lavaplayer.source.youtube.YoutubeConstants.VERIFY_AGE_URL;
@@ -29,7 +30,7 @@ public class DefaultYoutubeTrackDetailsLoader implements YoutubeTrackDetailsLoad
   private static final Logger log = LoggerFactory.getLogger(DefaultYoutubeTrackDetailsLoader.class);
 
   private volatile CachedPlayerScript cachedPlayerScript = null;
-
+  private static Boolean RetryInnertube = false;
   @Override
   public YoutubeTrackDetails loadDetails(HttpInterface httpInterface, String videoId, boolean requireFormats, YoutubeAudioSourceManager sourceManager) {
     try {
@@ -48,7 +49,7 @@ public class DefaultYoutubeTrackDetailsLoader implements YoutubeTrackDetailsLoad
     JsonBrowser mainInfo = loadTrackInfoFromInnertube(httpInterface, videoId, sourceManager);
 
     try {
-      YoutubeTrackJsonData initialData = loadBaseResponse(mainInfo, httpInterface, videoId);
+      YoutubeTrackJsonData initialData = loadBaseResponse(mainInfo, httpInterface, videoId, sourceManager);
 
       if (initialData == null) {
         return null;
@@ -66,13 +67,20 @@ public class DefaultYoutubeTrackDetailsLoader implements YoutubeTrackDetailsLoad
   protected YoutubeTrackJsonData loadBaseResponse(
       JsonBrowser mainInfo,
       HttpInterface httpInterface,
-      String videoId
+      String videoId,
+      YoutubeAudioSourceManager sourceManager
   ) throws IOException {
     YoutubeTrackJsonData data = YoutubeTrackJsonData.fromMainResult(mainInfo);
     InfoStatus status = checkPlayabilityStatus(data.playerResponse);
 
     if (status == InfoStatus.DOES_NOT_EXIST) {
       return null;
+    }
+
+    if (status == InfoStatus.EMBED_DISABLED && !RetryInnertube) {
+      RetryInnertube = true;
+      JsonBrowser trackInfo = loadTrackInfoFromInnertube(httpInterface, videoId, sourceManager);
+      return YoutubeTrackJsonData.fromMainResult(trackInfo);
     }
 
     if (status == InfoStatus.CONTENT_CHECK_REQUIRED) {
@@ -105,8 +113,12 @@ public class DefaultYoutubeTrackDetailsLoader implements YoutubeTrackDetailsLoad
         throw new FriendlyException(reason, COMMON, null);
       }
     } else if ("UNPLAYABLE".equals(status)) {
-      String unplayableReason = getUnplayableReason(statusBlock);
-      throw new FriendlyException(unplayableReason, COMMON, null);
+      if(reason.contains("video owner")) {
+        return InfoStatus.EMBED_DISABLED;
+      }else{ 
+        String unplayableReason = getUnplayableReason(statusBlock);
+        throw new FriendlyException(unplayableReason, COMMON, null);
+      }
     } else if ("LOGIN_REQUIRED".equals(status)) {
       String errorReason = statusBlock.get("errorScreen")
               .get("playerErrorMessageRenderer")
@@ -130,7 +142,8 @@ public class DefaultYoutubeTrackDetailsLoader implements YoutubeTrackDetailsLoad
     INFO_PRESENT,
     REQUIRES_LOGIN,
     DOES_NOT_EXIST,
-    CONTENT_CHECK_REQUIRED
+    CONTENT_CHECK_REQUIRED,
+    EMBED_DISABLED
   }
 
   protected String getUnplayableReason(JsonBrowser statusBlock) {
@@ -160,7 +173,7 @@ public class DefaultYoutubeTrackDetailsLoader implements YoutubeTrackDetailsLoad
     YoutubeSignatureCipher playerScriptTimestamp = sourceManager.getSignatureResolver().getCipherKeyAndTimestampFromScript(httpInterface,
             cachedPlayerScript.playerScriptUrl);
     HttpPost post = new HttpPost(PLAYER_URL);
-    StringEntity payload = new StringEntity(String.format(PLAYER_PAYLOAD, videoId, playerScriptTimestamp.scriptTimestamp), "UTF-8");
+    StringEntity payload = new StringEntity(String.format((RetryInnertube) ? _PLAYER_PAYLOAD : PLAYER_PAYLOAD , videoId, playerScriptTimestamp.scriptTimestamp), "UTF-8");
     post.setEntity(payload);
     try (CloseableHttpResponse response = httpInterface.execute(post)) {
       return processResponse(response);
