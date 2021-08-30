@@ -1,5 +1,6 @@
 package com.sedmelluq.discord.lavaplayer.tools;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class PBJUtils {
@@ -10,14 +11,17 @@ public class PBJUtils {
         return String.format("https://i.ytimg.com/vi_webp/%s/maxresdefault.webp", videoId);
     }
 
-    public static String getYouTubeThumbnail(JsonBrowser videoData, String videoId) {
+        public static String getYouTubeThumbnail(JsonBrowser videoData, String videoId) {
         List<JsonBrowser> thumbnails = videoData.get("thumbnail").get("thumbnails").values();
         if (!thumbnails.isEmpty()){
             String lastThumbnail = thumbnails.get(thumbnails.size() - 1).get("url").text();
-            if(lastThumbnail.contains("maxresdefault"))return lastThumbnail
-            ArrayList[] bestThumbnails = thumbnails.filter(t -> t.get("url").text().contains("?sqp=")).toArray();
-            if(!bestThumbnails.isEmpty())return bestThumbnails.get(bestThumbnails.size() - 1).get("url").text()
-            return lastThumbnail
+            if(lastThumbnail.contains("maxresdefault"))return lastThumbnail;
+            ArrayList<JsonBrowser> bestThumbnails = new ArrayList<>();
+            for (JsonBrowser thumbnail : thumbnails) {
+                if(thumbnail.get("url").text().contains("?sqp=")) bestThumbnails.add(thumbnail);
+            }
+            if(!bestThumbnails.isEmpty())return bestThumbnails.get(bestThumbnails.size() - 1).get("url").text();
+            return lastThumbnail;
         }
         return String.format("https://i.ytimg.com/vi_webp/%s/maxresdefault.webp", videoId);
     }

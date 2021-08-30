@@ -113,6 +113,7 @@ public class DefaultYoutubeTrackDetailsLoader implements YoutubeTrackDetailsLoad
         throw new FriendlyException(reason, COMMON, null);
       }
     } else if ("UNPLAYABLE".equals(status)) {
+      String reason = statusBlock.get("reason").text();
       if(reason.contains("video owner")) {
         return InfoStatus.EMBED_DISABLED;
       }else{ 
