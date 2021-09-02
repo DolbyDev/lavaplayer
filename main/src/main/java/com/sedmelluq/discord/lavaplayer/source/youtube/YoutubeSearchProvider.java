@@ -101,17 +101,17 @@ public class YoutubeSearchProvider implements YoutubeSearchResultLoader {
   }
 
   private AudioTrack extractPolymerData(JsonBrowser json, Function<AudioTrackInfo, AudioTrack> trackFactory) {
-    json = json.get("elementRenderer").get("newElement").get("type").get("componentType").get("model").get("compactVideoModel").get("compactVideoData").get("videoData");
+    json = json.get("elementRenderer").get("newElement").get("type").get("componentType").get("model").get("compactVideoModel").get("compactVideoData");
     if (json.isNull()) return null; // Ignore everything which is not a track
 
-    String title = json.get("metadata").get("title").text();
-    String author = json.get("metadata").get("byline").text();
-    if (json.get("thumbnail").get("timestampText").isNull()) {
+    String title = json.get("videoData").get("metadata").get("title").text();
+    String author = json.get("videoData").get("metadata").get("byline").text();
+    if (json.get("videoData").get("thumbnail").get("timestampText").isNull()) {
       return null; // Ignore if the video is a live stream
     }
-    long duration = DataFormatTools.durationTextToMillis(json.get("thumbnail").get("timestampText").text());
+    long duration = DataFormatTools.durationTextToMillis(json.get("videoData").get("thumbnail").get("timestampText").text());
     String videoId = json.get("onTap").get("innertubeCommand").get("watchEndpoint").get("videoId").text();
-    json.get("thumbnail").put("thumbnails", json.get("thumbnail").get("image").get("sources"));
+    json.get("videoData").get("thumbnail").put("thumbnails", json.get("videoData").get("thumbnail").get("image").get("sources"));
 
     AudioTrackInfo info = new AudioTrackInfo(title, author, duration, videoId, false,
         WATCH_URL_PREFIX + videoId, PBJUtils.getYouTubeThumbnail(json, videoId));
