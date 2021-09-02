@@ -79,6 +79,9 @@ public class DefaultYoutubePlaylistLoader implements YoutubePlaylistLoader {
             .get("sectionListRenderer")
             .get("contents")
             .index(0)
+            .get("itemSectionRenderer")
+            .get("contents")
+            .index(0)
             .get("playlistVideoListRenderer");
 
     List<AudioTrack> tracks = new ArrayList<>();
@@ -102,6 +105,8 @@ public class DefaultYoutubePlaylistLoader implements YoutubePlaylistLoader {
         continuationsToken = extractPlaylistTracks(playlistVideoListPage, tracks, trackFactory);
       }
     }
+
+    if(tracks.isEmpty()) throw new FriendlyException("No videos in this playlist yet", COMMON, null);
 
     return new BasicAudioPlaylist(playlistName, tracks, findSelectedTrack(tracks, selectedVideoId), false);
   }

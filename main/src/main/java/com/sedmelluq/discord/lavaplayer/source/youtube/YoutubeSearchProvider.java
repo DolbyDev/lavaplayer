@@ -101,16 +101,17 @@ public class YoutubeSearchProvider implements YoutubeSearchResultLoader {
   }
 
   private AudioTrack extractPolymerData(JsonBrowser json, Function<AudioTrackInfo, AudioTrack> trackFactory) {
-    json = json.get("compactVideoRenderer");
+    json = json.get("elementRenderer").get("newElement").get("type").get("componentType").get("model").get("compactVideoModel").get("videoData");
     if (json.isNull()) return null; // Ignore everything which is not a track
 
-    String title = json.get("title").get("runs").index(0).get("text").text();
-    String author = json.get("longBylineText").get("runs").index(0).get("text").text();
-    if (json.get("lengthText").isNull()) {
+    String title = json.get("metadata").get("title").text();
+    String author = json.get("metadata").get("byline").text();
+    if (json.get("thumbnail").get("timestampText").isNull()) {
       return null; // Ignore if the video is a live stream
     }
-    long duration = DataFormatTools.durationTextToMillis(json.get("lengthText").get("runs").index(0).get("text").text());
-    String videoId = json.get("videoId").text();
+    long duration = DataFormatTools.durationTextToMillis(json.get("thumbnail").get("timestampText").text());
+    String videoId = json.get("onTap").get("innertubeCommand").get("watchEndpoint").get("videoId").text();
+    json.get("thumbnail").put("thumbnails", json.get("thumbnail").get("image").get("sources"));
 
     AudioTrackInfo info = new AudioTrackInfo(title, author, duration, videoId, false,
         WATCH_URL_PREFIX + videoId, PBJUtils.getYouTubeThumbnail(json, videoId));
