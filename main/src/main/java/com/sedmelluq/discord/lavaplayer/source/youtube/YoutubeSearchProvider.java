@@ -106,7 +106,7 @@ public class YoutubeSearchProvider implements YoutubeSearchResultLoader {
 
     String title = json.get("videoData").get("metadata").get("title").text();
     String author = json.get("videoData").get("metadata").get("byline").text();
-    if (json.get("videoData").get("thumbnail").get("timestampText").isNull()) {
+    if (json.get("videoData").get("thumbnail").get("timestampTextA11y").isNull()) {
       return null; // Ignore if the video is a live stream
     }
     long duration = DataFormatTools.durationTextToMillis(json.get("videoData").get("thumbnail").get("timestampText").text());
