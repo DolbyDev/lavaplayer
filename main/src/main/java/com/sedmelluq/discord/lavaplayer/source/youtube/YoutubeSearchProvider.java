@@ -101,7 +101,7 @@ public class YoutubeSearchProvider implements YoutubeSearchResultLoader {
   }
 
   private AudioTrack extractPolymerData(JsonBrowser json, Function<AudioTrackInfo, AudioTrack> trackFactory) {
-    json = json.get("elementRenderer").get("newElement").get("type").get("componentType").get("model").get("compactVideoModel").get("videoData");
+    json = json.get("elementRenderer").get("newElement").get("type").get("componentType").get("model").get("compactVideoModel").get("compactVideoData").get("videoData");
     if (json.isNull()) return null; // Ignore everything which is not a track
 
     String title = json.get("metadata").get("title").text();
