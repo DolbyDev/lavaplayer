@@ -114,7 +114,7 @@ public class YoutubeSearchProvider implements YoutubeSearchResultLoader {
     json.get("videoData").get("thumbnail").put("thumbnails", json.get("videoData").get("thumbnail").get("image").get("sources"));
 
     AudioTrackInfo info = new AudioTrackInfo(title, author, duration, videoId, false,
-        WATCH_URL_PREFIX + videoId, PBJUtils.getYouTubeThumbnail(json, videoId));
+        WATCH_URL_PREFIX + videoId, PBJUtils.getYouTubeThumbnail(json.get("videoData"), videoId));
 
     return trackFactory.apply(info);
   }
