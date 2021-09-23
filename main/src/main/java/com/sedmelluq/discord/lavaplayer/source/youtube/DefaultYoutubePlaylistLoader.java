@@ -65,10 +65,11 @@ public class DefaultYoutubePlaylistLoader implements YoutubePlaylistLoader {
             .get("header")
             .get("playlistHeaderRenderer");
     String playlistName = playlistInfo.get("title").get("runs").index(0).get("text").text();
-    JsonBrowser author = playlistInfo.get("ownerText").get("runs").index(0);
-    String channelName = author.get("text").text();
-    JsonBrowser channelId =  author.get("navigationEndpoint").get("browseEndpoint").get("browseId");
-    String image = PBJUtils.getYouTubeThumbnail(playlistInfo.get("playlistHeaderBanner").get("heroPlaylistThumbnailRenderer"), null);
+    JsonBrowser channel = playlistInfo.get("ownerText").get("runs").index(0);
+    String channelName = channel.get("text").text();
+    JsonBrowser channelId =  channel.get("navigationEndpoint").get("browseEndpoint").get("browseId");
+    JsonBrowser thumbnail =  playlistInfo.get("playlistHeaderBanner").get("heroPlaylistThumbnailRenderer");
+    String image = (!thumbnail.isNull()) ? PBJUtils.getYouTubeThumbnail(thumbnail, null) : null;
 
     JsonBrowser playlistVideoList = json
             .get("contents")
