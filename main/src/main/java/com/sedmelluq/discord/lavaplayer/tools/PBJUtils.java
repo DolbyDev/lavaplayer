@@ -23,13 +23,18 @@ public class PBJUtils {
             if(!bestThumbnails.isEmpty())return bestThumbnails.get(bestThumbnails.size() - 1).get("url").text();
             return lastThumbnail;
         }
+        if(videoId.isEmpty())return null;
         return String.format("https://i.ytimg.com/vi_webp/%s/maxresdefault.webp", videoId);
     }
 
     public static String getSoundCloudThumbnail(JsonBrowser trackData) {
-        JsonBrowser thumbnail = trackData.get("artwork_url");
-        if (!thumbnail.isNull()) return thumbnail.text().replace("large.jpg", "original.jpg");
-        JsonBrowser avatar = trackData.get("user").get("avatar_url");
-        return avatar.text().replace("large.jpg", "original.jpg");
+        String thumbnail = trackData.get("artwork_url").text();
+        if (!thumbnail.isEmpty()) return soundCloudBestImage(thumbnail);
+        String avatar = trackData.get("user").get("avatar_url").text();
+        return soundCloudBestImage(avatar);
+    }
+
+    public static String soundCloudBestImage(String artworkUrl) {
+        return artworkUrl.replace("large.jpg", "t500x500.jpg");
     }
 }

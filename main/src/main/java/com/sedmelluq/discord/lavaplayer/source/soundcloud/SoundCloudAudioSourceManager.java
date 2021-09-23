@@ -4,6 +4,7 @@ import com.sedmelluq.discord.lavaplayer.player.DefaultAudioPlayerManager;
 import com.sedmelluq.discord.lavaplayer.source.AudioSourceManager;
 import com.sedmelluq.discord.lavaplayer.tools.FriendlyException;
 import com.sedmelluq.discord.lavaplayer.tools.JsonBrowser;
+import com.sedmelluq.discord.lavaplayer.tools.PBJUtils;
 import com.sedmelluq.discord.lavaplayer.tools.io.HttpClientTools;
 import com.sedmelluq.discord.lavaplayer.tools.io.HttpConfigurable;
 import com.sedmelluq.discord.lavaplayer.tools.io.HttpInterface;
@@ -276,7 +277,7 @@ public class SoundCloudAudioSourceManager implements AudioSourceManager, HttpCon
       }
     }
 
-    return new BasicAudioPlaylist("Liked by " + userInfo.name, tracks, null, false);
+    return new BasicAudioPlaylist("Liked by " + userInfo.name, null, null, null, tracks, null, false);
   }
 
   private static class UserInfo {
@@ -348,7 +349,7 @@ public class SoundCloudAudioSourceManager implements AudioSourceManager, HttpCon
       }
     }
 
-    return new BasicAudioPlaylist("Search results for: " + query, tracks, null, true);
+    return new BasicAudioPlaylist("Search results for: " + query, null, null, null, tracks, null, true);
   }
 
   public static class Builder {

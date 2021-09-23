@@ -19,8 +19,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Function;
 
-import static com.sedmelluq.discord.lavaplayer.source.youtube.YoutubeConstants.NEXT_PAYLOAD;
-import static com.sedmelluq.discord.lavaplayer.source.youtube.YoutubeConstants.NEXT_URL;
+import static com.sedmelluq.discord.lavaplayer.source.youtube.YoutubeConstants.*;
 import static com.sedmelluq.discord.lavaplayer.tools.FriendlyException.Severity.SUSPICIOUS;
 
 /**
@@ -56,22 +55,28 @@ public class YoutubeMixProvider implements YoutubeMixLoader {
               .get("playlist");
 
       JsonBrowser title = playlist.get("title");
+      String image = PBJUtils.getYouTubeThumbnail(playlist.get("contents").index(0).get("playlistPanelVideoRenderer"), null);
+      String channelName = playlist.get("longBylineText").get("runs").index(0).get("text").text();
+      String channelId = playlist.get("longBylineText").get("runs").index(0).get("navigationEndpoint").get("browseEndpoint").get("browseId").text();
+
 
       if (!title.isNull()) {
         playlistTitle = title.text();
       }
 
       extractPlaylistTracks(playlist.get("contents"), tracks, trackFactory);
+
+      if (tracks.isEmpty()) {
+        throw new FriendlyException("Could not find tracks from mix.", SUSPICIOUS, null);
+      }
+
+      AudioTrack selectedTrack = findSelectedTrack(tracks, selectedVideoId);
+      return new BasicAudioPlaylist(playlistTitle, channelName, (!channelId.isEmpty()) ? YOUTUBE_ORIGIN + "/channel/" + channelId : null, image, tracks, selectedTrack, false);
+
     } catch (IOException e) {
       throw new FriendlyException("Could not read mix page.", SUSPICIOUS, e);
     }
 
-    if (tracks.isEmpty()) {
-      throw new FriendlyException("Could not find tracks from mix.", SUSPICIOUS, null);
-    }
-
-    AudioTrack selectedTrack = findSelectedTrack(tracks, selectedVideoId);
-    return new BasicAudioPlaylist(playlistTitle, tracks, selectedTrack, false);
   }
 
   private void extractPlaylistTracks(

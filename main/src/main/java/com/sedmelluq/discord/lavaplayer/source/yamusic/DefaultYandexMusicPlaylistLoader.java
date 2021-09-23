@@ -72,7 +72,7 @@ public class DefaultYandexMusicPlaylistLoader extends DefaultYandexMusicTrackLoa
         name = result.get("artist").get("name").text();
       }
 
-      return new BasicAudioPlaylist(name, tracks, null, false);
+      return new BasicAudioPlaylist(name, null, null, null, tracks, null, false);
     });
   }
 

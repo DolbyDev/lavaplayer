@@ -12,6 +12,21 @@ public interface AudioPlaylist extends AudioItem {
   String getName();
 
   /**
+   * @return Author Name of the playlist
+   */
+  String getAuthor();
+
+  /**
+   * @return Author Url of the playlist
+   */
+  String getAuthorUrl();
+
+  /**
+   * @return Image of the playlist
+   */
+  String getImage();
+
+  /**
    * @return List of tracks in the playlist
    */
   List<AudioTrack> getTracks();

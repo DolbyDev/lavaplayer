@@ -2,6 +2,7 @@ package com.sedmelluq.discord.lavaplayer.source.soundcloud;
 
 import com.sedmelluq.discord.lavaplayer.tools.FriendlyException;
 import com.sedmelluq.discord.lavaplayer.tools.JsonBrowser;
+import com.sedmelluq.discord.lavaplayer.tools.PBJUtils;
 import com.sedmelluq.discord.lavaplayer.tools.io.HttpClientTools;
 import com.sedmelluq.discord.lavaplayer.tools.io.HttpInterface;
 import com.sedmelluq.discord.lavaplayer.tools.io.HttpInterfaceManager;
@@ -73,9 +74,15 @@ public class DefaultSoundCloudPlaylistLoader implements SoundCloudPlaylistLoader
       JsonBrowser rootData = dataLoader.load(httpInterface, playlistWebUrl);
       String kind = rootData.get("kind").text();
       JsonBrowser playlistData = dataReader.findPlaylistData(rootData, kind);
+      String image = playlistData.get("calculated_artwork_url").text();
+      String author = playlistData.get("user").get("username").text();
+      String authorUrl = playlistData.get("user").get("avatar_url").text();
 
       return new BasicAudioPlaylist(
           dataReader.readPlaylistName(playlistData),
+          author,
+          authorUrl,
+          PBJUtils.soundCloudBestImage(image),
           loadPlaylistTracks(httpInterface, playlistData, trackFactory),
           null,
           false

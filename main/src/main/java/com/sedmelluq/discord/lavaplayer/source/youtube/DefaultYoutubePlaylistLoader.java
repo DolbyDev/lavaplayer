@@ -24,6 +24,7 @@ import java.util.stream.Collectors;
 import static com.sedmelluq.discord.lavaplayer.source.youtube.YoutubeConstants.BROWSE_CONTINUATION_PAYLOAD;
 import static com.sedmelluq.discord.lavaplayer.source.youtube.YoutubeConstants.BROWSE_PLAYLIST_PAYLOAD;
 import static com.sedmelluq.discord.lavaplayer.source.youtube.YoutubeConstants.BROWSE_URL;
+import static com.sedmelluq.discord.lavaplayer.source.youtube.YoutubeConstants.YOUTUBE_ORIGIN;
 import static com.sedmelluq.discord.lavaplayer.tools.FriendlyException.Severity.COMMON;
 
 public class DefaultYoutubePlaylistLoader implements YoutubePlaylistLoader {
@@ -60,14 +61,14 @@ public class DefaultYoutubePlaylistLoader implements YoutubePlaylistLoader {
       throw new FriendlyException(errorAlertMessage, COMMON, null);
     }
 
-    String playlistName = json
+    JsonBrowser playlistInfo = json
             .get("header")
-            .get("playlistHeaderRenderer")
-            .get("title")
-            .get("runs")
-            .index(0)
-            .get("text")
-            .text();
+            .get("playlistHeaderRenderer");
+    String playlistName = playlistInfo.get("title").get("runs").index(0).get("text").text();
+    JsonBrowser author = playlistInfo.get("ownerText").get("runs").index(0);
+    String channelName = author.get("text").text();
+    String channelId =  author.get("navigationEndpoint").get("browseEndpoint").get("browseId").text();
+    String image = PBJUtils.getYouTubeThumbnail(playlistInfo.get("playlistHeaderBanner").get("heroPlaylistThumbnailRenderer"), null);
 
     JsonBrowser playlistVideoList = json
             .get("contents")
@@ -108,7 +109,14 @@ public class DefaultYoutubePlaylistLoader implements YoutubePlaylistLoader {
 
     if(tracks.isEmpty()) throw new FriendlyException("No videos in this playlist yet", COMMON, null);
 
-    return new BasicAudioPlaylist(playlistName, tracks, findSelectedTrack(tracks, selectedVideoId), false);
+    return new BasicAudioPlaylist(
+            playlistName,
+            channelName,
+            (!channelId.isEmpty()) ? YOUTUBE_ORIGIN + "/channel/" + channelId : null,
+            (image.isEmpty()) ? tracks.get(0).getInfo().artworkUrl : image,
+            tracks,
+            findSelectedTrack(tracks, selectedVideoId),
+            false);
   }
 
   private String findErrorAlert(JsonBrowser jsonResponse) {

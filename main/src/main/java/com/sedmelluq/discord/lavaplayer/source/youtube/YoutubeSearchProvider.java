@@ -80,7 +80,7 @@ public class YoutubeSearchProvider implements YoutubeSearchResultLoader {
     if (tracks.isEmpty()) {
       return AudioReference.NO_TRACK;
     } else {
-      return new BasicAudioPlaylist("Search results for: " + query, tracks, null, true);
+      return new BasicAudioPlaylist("Search results for: " + query, null, null, null, tracks, null, true);
     }
   }
 
@@ -89,32 +89,33 @@ public class YoutubeSearchProvider implements YoutubeSearchResultLoader {
     jsonBrowser.get("contents")
         .get("sectionListRenderer")
         .get("contents")
-        .index(0)
-        .get("itemSectionRenderer")
-        .get("contents")
         .values()
-        .forEach(jsonTrack -> {
-          AudioTrack track = extractPolymerData(jsonTrack, trackFactory);
-          if (track != null) list.add(track);
-        });
+        .forEach(jsonSection -> {
+          jsonSection.get("itemSectionRenderer")
+              .get("contents")
+              .values()
+              .forEach(jsonTrack -> {
+                AudioTrack track = extractPolymerData(jsonTrack, trackFactory);
+                if (track != null) list.add(track);
+              });
+         });
     return list;
   }
 
   private AudioTrack extractPolymerData(JsonBrowser json, Function<AudioTrackInfo, AudioTrack> trackFactory) {
-    json = json.get("elementRenderer").get("newElement").get("type").get("componentType").get("model").get("compactVideoModel").get("compactVideoData");
+    json = json.get("compactVideoRenderer");
     if (json.isNull()) return null; // Ignore everything which is not a track
 
-    String title = json.get("videoData").get("metadata").get("title").text();
-    String author = json.get("videoData").get("metadata").get("byline").text();
-    if (json.get("videoData").get("thumbnail").get("timestampTextA11y").isNull()) {
+    String title = json.get("title").get("runs").index(0).get("text").text();
+    String author = json.get("longBylineText").get("runs").index(0).get("text").text();
+    if (json.get("lengthText").isNull()) {
       return null; // Ignore if the video is a live stream
     }
-    long duration = DataFormatTools.durationTextToMillis(json.get("videoData").get("thumbnail").get("timestampText").text());
-    String videoId = json.get("onTap").get("innertubeCommand").get("watchEndpoint").get("videoId").text();
-    json.get("videoData").get("thumbnail").put("thumbnails", json.get("videoData").get("thumbnail").get("image").get("sources"));
+    long duration = DataFormatTools.durationTextToMillis(json.get("lengthText").get("runs").index(0).get("text").text());
+    String videoId = json.get("videoId").text();
 
     AudioTrackInfo info = new AudioTrackInfo(title, author, duration, videoId, false,
-        WATCH_URL_PREFIX + videoId, PBJUtils.getYouTubeThumbnail(json.get("videoData"), videoId));
+            WATCH_URL_PREFIX + videoId, PBJUtils.getYouTubeThumbnail(json, videoId));
 
     return trackFactory.apply(info);
   }

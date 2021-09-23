@@ -95,6 +95,6 @@ public class DefaultSoundCloudDataReader implements SoundCloudDataReader {
       return data;
     }
 
-    return data;
+    return null;
   }
 }
