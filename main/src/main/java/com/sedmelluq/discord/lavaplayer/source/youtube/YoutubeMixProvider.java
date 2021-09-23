@@ -40,6 +40,10 @@ public class YoutubeMixProvider implements YoutubeMixLoader {
       Function<AudioTrackInfo, AudioTrack> trackFactory
   ) {
     String playlistTitle = "YouTube mix";
+    String playlistAuthor = "YouTube";
+    String playlistAuthorUrl = "https://www.youtube.com/channel/UCBR8-60-B28hp2BmDPdntcQ";
+    String playlistImage = null;
+
     List<AudioTrack> tracks = new ArrayList<>();
 
     HttpPost post = new HttpPost(NEXT_URL);
@@ -55,27 +59,34 @@ public class YoutubeMixProvider implements YoutubeMixLoader {
               .get("playlist");
 
       JsonBrowser title = playlist.get("title");
-      String image = PBJUtils.getYouTubeThumbnail(playlist.get("contents").index(0).get("playlistPanelVideoRenderer"), null);
-      String channelName = playlist.get("longBylineText").get("runs").index(0).get("text").text();
-      String channelId = playlist.get("longBylineText").get("runs").index(0).get("navigationEndpoint").get("browseEndpoint").get("browseId").text();
+      JsonBrowser channelName = playlist.get("longBylineText").get("runs").index(0).get("text");
+      JsonBrowser channelId = playlist.get("longBylineText").get("runs").index(0).get("navigationEndpoint").get("browseEndpoint").get("browseId");
 
 
       if (!title.isNull()) {
         playlistTitle = title.text();
       }
+      if (!channelName.isNull()) {
+        playlistAuthor = channelName.text();
+      }
+      if (!channelId.isNull()) {
+        playlistAuthorUrl = YOUTUBE_ORIGIN + "/channel/" + channelId.text();
+      }
+      playlistImage = PBJUtils.getYouTubeThumbnail(playlist.get("contents").index(0).get("playlistPanelVideoRenderer"), null);
 
       extractPlaylistTracks(playlist.get("contents"), tracks, trackFactory);
-
-      if (tracks.isEmpty()) {
-        throw new FriendlyException("Could not find tracks from mix.", SUSPICIOUS, null);
-      }
-
-      AudioTrack selectedTrack = findSelectedTrack(tracks, selectedVideoId);
-      return new BasicAudioPlaylist(playlistTitle, channelName, (!channelId.isEmpty()) ? YOUTUBE_ORIGIN + "/channel/" + channelId : null, image, tracks, selectedTrack, false);
 
     } catch (IOException e) {
       throw new FriendlyException("Could not read mix page.", SUSPICIOUS, e);
     }
+
+    if (tracks.isEmpty()) {
+      throw new FriendlyException("Could not find tracks from mix.", SUSPICIOUS, null);
+    }
+
+    AudioTrack selectedTrack = findSelectedTrack(tracks, selectedVideoId);
+    return new BasicAudioPlaylist(playlistTitle, playlistAuthor, playlistAuthorUrl, playlistImage, tracks, selectedTrack, false);
+
 
   }
 
