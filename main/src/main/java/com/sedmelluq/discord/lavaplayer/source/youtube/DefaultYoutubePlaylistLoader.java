@@ -67,7 +67,7 @@ public class DefaultYoutubePlaylistLoader implements YoutubePlaylistLoader {
     String playlistName = playlistInfo.get("title").get("runs").index(0).get("text").text();
     JsonBrowser author = playlistInfo.get("ownerText").get("runs").index(0);
     String channelName = author.get("text").text();
-    String channelId =  author.get("navigationEndpoint").get("browseEndpoint").get("browseId").text();
+    JsonBrowser channelId =  author.get("navigationEndpoint").get("browseEndpoint").get("browseId");
     String image = PBJUtils.getYouTubeThumbnail(playlistInfo.get("playlistHeaderBanner").get("heroPlaylistThumbnailRenderer"), null);
 
     JsonBrowser playlistVideoList = json
@@ -109,7 +109,7 @@ public class DefaultYoutubePlaylistLoader implements YoutubePlaylistLoader {
     return new BasicAudioPlaylist(
             playlistName,
             channelName,
-            (!channelId.isEmpty()) ? YOUTUBE_ORIGIN + "/channel/" + channelId : null,
+            (!channelId.isNull()) ? YOUTUBE_ORIGIN + "/channel/" + channelId.text() : null,
             (image.isEmpty()) ? tracks.get(0).getInfo().artworkUrl : image,
             tracks,
             findSelectedTrack(tracks, selectedVideoId),

@@ -23,7 +23,7 @@ public class PBJUtils {
             if(!bestThumbnails.isEmpty())return bestThumbnails.get(bestThumbnails.size() - 1).get("url").text();
             return lastThumbnail;
         }
-        if(videoId.isEmpty())return null;
+        if(videoId.isEmpty())return "";
         return String.format("https://i.ytimg.com/vi_webp/%s/maxresdefault.webp", videoId);
     }
 
