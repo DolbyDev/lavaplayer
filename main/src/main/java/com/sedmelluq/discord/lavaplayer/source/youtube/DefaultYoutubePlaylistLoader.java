@@ -80,9 +80,6 @@ public class DefaultYoutubePlaylistLoader implements YoutubePlaylistLoader {
             .get("sectionListRenderer")
             .get("contents")
             .index(0)
-            .get("itemSectionRenderer")
-            .get("contents")
-            .index(0)
             .get("playlistVideoListRenderer");
 
     List<AudioTrack> tracks = new ArrayList<>();
