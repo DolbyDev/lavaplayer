@@ -69,7 +69,6 @@ public class DefaultYoutubePlaylistLoader implements YoutubePlaylistLoader {
     String channelName = channel.get("text").text();
     JsonBrowser channelId =  channel.get("navigationEndpoint").get("browseEndpoint").get("browseId");
     JsonBrowser thumbnail =  playlistInfo.get("playlistHeaderBanner").get("heroPlaylistThumbnailRenderer");
-    String image = (!thumbnail.isNull()) ? PBJUtils.getYouTubeThumbnail(thumbnail, null) : null;
 
     JsonBrowser playlistVideoList = json
             .get("contents")
@@ -107,11 +106,13 @@ public class DefaultYoutubePlaylistLoader implements YoutubePlaylistLoader {
 
     if(tracks.isEmpty()) throw new FriendlyException("No videos in this playlist yet", COMMON, null);
 
+    String image = (!thumbnail.isNull()) ? PBJUtils.getYouTubeThumbnail(thumbnail, tracks.get(0).getInfo().identifier) : tracks.get(0).getInfo().artworkUrl;
+
     return new BasicAudioPlaylist(
             playlistName,
             channelName,
             (!channelId.isNull()) ? YOUTUBE_ORIGIN + "/channel/" + channelId.text() : null,
-            (image.isEmpty()) ? tracks.get(0).getInfo().artworkUrl : image,
+            image,
             tracks,
             findSelectedTrack(tracks, selectedVideoId),
             false);
