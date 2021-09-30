@@ -28,10 +28,10 @@ public class PBJUtils {
     }
 
     public static String getSoundCloudThumbnail(JsonBrowser trackData) {
-        String thumbnail = trackData.get("artwork_url").text();
-        if (!thumbnail.isEmpty()) return soundCloudBestImage(thumbnail);
-        String avatar = trackData.get("user").get("avatar_url").text();
-        return soundCloudBestImage(avatar);
+        JsonBrowser thumbnail = trackData.get("artwork_url");
+        if (!thumbnail.isNull()) return soundCloudBestImage(thumbnail.text());
+        JsonBrowser avatar = trackData.get("user").get("avatar_url");
+        return soundCloudBestImage(avatar.text());
     }
 
     public static String soundCloudBestImage(String artworkUrl) {
