@@ -25,6 +25,7 @@ import static com.sedmelluq.discord.lavaplayer.source.youtube.YoutubeConstants.B
 import static com.sedmelluq.discord.lavaplayer.source.youtube.YoutubeConstants.BROWSE_PLAYLIST_PAYLOAD;
 import static com.sedmelluq.discord.lavaplayer.source.youtube.YoutubeConstants.BROWSE_URL;
 import static com.sedmelluq.discord.lavaplayer.source.youtube.YoutubeConstants.WATCH_URL_PREFIX;
+import static com.sedmelluq.discord.lavaplayer.source.youtube.YoutubeConstants.YOUTUBE_ORIGIN;
 import static com.sedmelluq.discord.lavaplayer.tools.FriendlyException.Severity.COMMON;
 
 public class DefaultYoutubePlaylistLoader implements YoutubePlaylistLoader {
@@ -61,14 +62,14 @@ public class DefaultYoutubePlaylistLoader implements YoutubePlaylistLoader {
       throw new FriendlyException(errorAlertMessage, COMMON, null);
     }
 
-    String playlistName = json
+    JsonBrowser playlistInfo = json
             .get("header")
-            .get("playlistHeaderRenderer")
-            .get("title")
-            .get("runs")
-            .index(0)
-            .get("text")
-            .text();
+            .get("playlistHeaderRenderer");
+    JsonBrowser playlistName = playlistInfo.get("title").get("runs").index(0).get("text");
+    JsonBrowser channel = playlistInfo.get("ownerText").get("runs").index(0);
+    String channelName = channel.get("text").text();
+    JsonBrowser channelId =  channel.get("navigationEndpoint").get("browseEndpoint").get("browseId");
+    JsonBrowser thumbnail =  playlistInfo.get("playlistHeaderBanner").get("heroPlaylistThumbnailRenderer");
 
     JsonBrowser playlistVideoList = json
             .get("contents")
@@ -104,7 +105,18 @@ public class DefaultYoutubePlaylistLoader implements YoutubePlaylistLoader {
       }
     }
 
-    return new BasicAudioPlaylist(playlistName, tracks, findSelectedTrack(tracks, selectedVideoId), false);
+    if(tracks.isEmpty()) throw new FriendlyException("No videos in this playlist yet", COMMON, null);
+
+    String image = (!thumbnail.isNull()) ? PBJUtils.getYouTubeThumbnail(thumbnail, tracks.get(0).getInfo().identifier) : tracks.get(0).getInfo().artworkUrl;
+
+    return new BasicAudioPlaylist(
+            (playlistName.isNull()) ? "YouTube" : playlistName.text(),
+            channelName,
+            YOUTUBE_ORIGIN + "/channel/" + (!channelId.isNull() ? channelId.text() : "UCBR8-60-B28hp2BmDPdntcQ") ,
+            image,
+            tracks,
+            findSelectedTrack(tracks, selectedVideoId),
+            false);
   }
 
   private String findErrorAlert(JsonBrowser jsonResponse) {

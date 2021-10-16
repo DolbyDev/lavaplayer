@@ -80,7 +80,7 @@ public class YoutubeSearchProvider implements YoutubeSearchResultLoader {
     if (tracks.isEmpty()) {
       return AudioReference.NO_TRACK;
     } else {
-      return new BasicAudioPlaylist("Search results for: " + query, tracks, null, true);
+      return new BasicAudioPlaylist("Search results for: " + query, null, null, null, tracks, null, true);
     }
   }
 
@@ -89,14 +89,16 @@ public class YoutubeSearchProvider implements YoutubeSearchResultLoader {
     jsonBrowser.get("contents")
         .get("sectionListRenderer")
         .get("contents")
-        .index(0)
-        .get("itemSectionRenderer")
-        .get("contents")
         .values()
-        .forEach(jsonTrack -> {
-          AudioTrack track = extractPolymerData(jsonTrack, trackFactory);
-          if (track != null) list.add(track);
-        });
+        .forEach(jsonSection -> {
+          jsonSection.get("itemSectionRenderer")
+              .get("contents")
+              .values()
+              .forEach(jsonTrack -> {
+                AudioTrack track = extractPolymerData(jsonTrack, trackFactory);
+                if (track != null) list.add(track);
+              });
+         });
     return list;
   }
 
@@ -113,7 +115,7 @@ public class YoutubeSearchProvider implements YoutubeSearchResultLoader {
     String videoId = json.get("videoId").text();
 
     AudioTrackInfo info = new AudioTrackInfo(title, author, duration, videoId, false,
-        WATCH_URL_PREFIX + videoId, PBJUtils.getYouTubeThumbnail(json, videoId));
+            WATCH_URL_PREFIX + videoId, PBJUtils.getYouTubeThumbnail(json, videoId));
 
     return trackFactory.apply(info);
   }
