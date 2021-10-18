@@ -28,6 +28,7 @@ import org.apache.http.client.utils.URIBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import static com.sedmelluq.discord.lavaplayer.tools.FriendlyException.Severity.COMMON;
 import static com.sedmelluq.discord.lavaplayer.tools.FriendlyException.Severity.SUSPICIOUS;
 
 public class DefaultSoundCloudPlaylistLoader implements SoundCloudPlaylistLoader {
@@ -74,16 +75,19 @@ public class DefaultSoundCloudPlaylistLoader implements SoundCloudPlaylistLoader
       JsonBrowser rootData = dataLoader.load(httpInterface, playlistWebUrl);
       String kind = rootData.get("kind").text();
       JsonBrowser playlistData = dataReader.findPlaylistData(rootData, kind);
-      JsonBrowser image = playlistData.get("calculated_artwork_url");
+      List<AudioTrack> tracks = loadPlaylistTracks(httpInterface, playlistData, trackFactory);
+      if(tracks.isEmpty()) throw new FriendlyException("Unable to find tracks in this playlist", COMMON, null);
+
+      JsonBrowser image = playlistData.get("artwork_url");
       String author = playlistData.get("user").get("username").text();
-      JsonBrowser authorImageUrl = playlistData.get("user").get("avatar_url");
+      String authorUrl = playlistData.get("user").get("permalink_url").text();
 
       return new BasicAudioPlaylist(
           dataReader.readPlaylistName(playlistData),
           author,
-          (!authorImageUrl.isNull()) ? PBJUtils.soundCloudBestImage(authorImageUrl.text()) : null,
-          (!image.isNull()) ? PBJUtils.soundCloudBestImage(image.text()) : null,
-          loadPlaylistTracks(httpInterface, playlistData, trackFactory),
+          authorUrl,
+          (!image.isNull()) ? PBJUtils.soundCloudBestImage(image.text()) : tracks.get(0).getInfo().artworkUrl,
+          tracks,
           null,
           false
       );
