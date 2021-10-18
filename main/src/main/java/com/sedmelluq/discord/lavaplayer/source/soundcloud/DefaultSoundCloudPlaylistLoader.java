@@ -74,15 +74,15 @@ public class DefaultSoundCloudPlaylistLoader implements SoundCloudPlaylistLoader
       JsonBrowser rootData = dataLoader.load(httpInterface, playlistWebUrl);
       String kind = rootData.get("kind").text();
       JsonBrowser playlistData = dataReader.findPlaylistData(rootData, kind);
-      String image = playlistData.get("calculated_artwork_url").text();
+      JsonBrowser image = playlistData.get("calculated_artwork_url");
       String author = playlistData.get("user").get("username").text();
-      String authorUrl = playlistData.get("user").get("avatar_url").text();
+      JsonBrowser authorImageUrl = playlistData.get("user").get("avatar_url");
 
       return new BasicAudioPlaylist(
           dataReader.readPlaylistName(playlistData),
           author,
-          authorUrl,
-          PBJUtils.soundCloudBestImage(image),
+          (!authorImageUrl.isNull()) ? PBJUtils.soundCloudBestImage(authorImageUrl.text()) : null,
+          (!image.isNull()) ? PBJUtils.soundCloudBestImage(image.text()) : null,
           loadPlaylistTracks(httpInterface, playlistData, trackFactory),
           null,
           false
