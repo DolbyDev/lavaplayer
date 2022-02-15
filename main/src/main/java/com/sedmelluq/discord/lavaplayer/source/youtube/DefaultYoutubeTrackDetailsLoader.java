@@ -72,7 +72,7 @@ public class DefaultYoutubeTrackDetailsLoader implements YoutubeTrackDetailsLoad
           YoutubeAudioSourceManager sourceManager,
           boolean RetryInnertube) throws IOException {
     YoutubeTrackJsonData data = YoutubeTrackJsonData.fromMainResult(mainInfo);
-    InfoStatus status = checkPlayabilityStatus(data.playerResponse);
+    InfoStatus status = checkPlayabilityStatus(data.playerResponse, RetryInnertube);
 
     if (status == InfoStatus.DOES_NOT_EXIST) {
       return null;
@@ -93,7 +93,7 @@ public class DefaultYoutubeTrackDetailsLoader implements YoutubeTrackDetailsLoad
     return data;
   }
 
-  protected InfoStatus checkPlayabilityStatus(JsonBrowser playerResponse) {
+  protected InfoStatus checkPlayabilityStatus(JsonBrowser playerResponse, boolean RetryInnertube) {
     JsonBrowser statusBlock = playerResponse.get("playabilityStatus");
 
     if (statusBlock.isNull()) {
@@ -123,9 +123,8 @@ public class DefaultYoutubeTrackDetailsLoader implements YoutubeTrackDetailsLoad
       if ("This video is private".equals(errorReason)) {
         throw new FriendlyException("This is a private video.", COMMON, null);
       }
-
-      if ("This video may be inappropriate for some users.".equals(errorReason)) {
-        throw new FriendlyException("This video requires age verification.", SUSPICIOUS,
+      if (RetryInnertube) {
+        throw new FriendlyException(errorReason, SUSPICIOUS,
                 new IllegalStateException("You did not set email and password in YoutubeAudioSourceManager."));
       }
 
