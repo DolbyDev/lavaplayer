@@ -78,9 +78,13 @@ public class DefaultYoutubeTrackDetailsLoader implements YoutubeTrackDetailsLoad
       return null;
     }
 
-    if (status == InfoStatus.REQUIRES_LOGIN && !RetryInnertube) {
-      JsonBrowser trackInfo = loadTrackInfoFromInnertube(httpInterface, videoId, sourceManager, true);
-      return loadBaseResponse(trackInfo, httpInterface, videoId, sourceManager, true);
+    if (status == InfoStatus.REQUIRES_LOGIN) {
+      if(!RetryInnertube) {
+        JsonBrowser trackInfo = loadTrackInfoFromInnertube(httpInterface, videoId, sourceManager, true);
+        return loadBaseResponse(trackInfo, httpInterface, videoId, sourceManager, true);
+      }
+      throw new FriendlyException("This video requires age verification.", SUSPICIOUS,
+              new IllegalStateException("You did not set email and password in YoutubeAudioSourceManager."));
     }
 
     if (status == InfoStatus.CONTENT_CHECK_REQUIRED) {
@@ -120,11 +124,6 @@ public class DefaultYoutubeTrackDetailsLoader implements YoutubeTrackDetailsLoad
 
       if ("This video is private".equals(errorReason)) {
         throw new FriendlyException("This is a private video.", COMMON, null);
-      }
-
-      if ("This video may be inappropriate for some users.".equals(errorReason)) {
-        throw new FriendlyException("This video requires age verification.", SUSPICIOUS,
-            new IllegalStateException("You did not set email and password in YoutubeAudioSourceManager."));
       }
 
       return InfoStatus.REQUIRES_LOGIN;
