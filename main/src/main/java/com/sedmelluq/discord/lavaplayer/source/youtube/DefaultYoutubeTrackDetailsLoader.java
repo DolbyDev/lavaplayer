@@ -126,9 +126,9 @@ public class DefaultYoutubeTrackDetailsLoader implements YoutubeTrackDetailsLoad
       if (RetryInnertube) {
         throw new FriendlyException(errorReason, SUSPICIOUS,
                 new IllegalStateException("You did not set email and password in YoutubeAudioSourceManager."));
+      }else {
+        return InfoStatus.REQUIRES_LOGIN;
       }
-
-      return InfoStatus.REQUIRES_LOGIN;
     } else if ("CONTENT_CHECK_REQUIRED".equals(status)) {
       return InfoStatus.CONTENT_CHECK_REQUIRED;
     } else {
