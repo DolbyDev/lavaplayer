@@ -66,11 +66,12 @@ public class DefaultYoutubeTrackDetailsLoader implements YoutubeTrackDetailsLoad
   }
 
   protected YoutubeTrackJsonData loadBaseResponse(
-      JsonBrowser mainInfo,
-      HttpInterface httpInterface,
-      String videoId,
-      YoutubeAudioSourceManager sourceManager,
-      boolean RetryInnertube) throws IOException {
+          JsonBrowser mainInfo,
+          HttpInterface httpInterface,
+          String videoId,
+          YoutubeAudioSourceManager sourceManager,
+          boolean RetryInnertube
+  ) throws IOException {
     YoutubeTrackJsonData data = YoutubeTrackJsonData.fromMainResult(mainInfo);
     InfoStatus status = checkPlayabilityStatus(data.playerResponse);
 
@@ -79,9 +80,8 @@ public class DefaultYoutubeTrackDetailsLoader implements YoutubeTrackDetailsLoad
     }
 
     if (status == InfoStatus.REQUIRES_LOGIN && !RetryInnertube) {
-        JsonBrowser trackInfo = loadTrackInfoFromInnertube(httpInterface, videoId, sourceManager, true);
-        return loadBaseResponse(trackInfo, httpInterface, videoId, sourceManager, true);
-      //throw new FriendlyException("This video requires age verification.", SUSPICIOUS, null);
+      JsonBrowser trackInfo = loadTrackInfoFromInnertube(httpInterface, videoId, sourceManager, true);
+      return loadBaseResponse(trackInfo, httpInterface, videoId, sourceManager, true);
     }
 
     if (status == InfoStatus.CONTENT_CHECK_REQUIRED) {
@@ -135,8 +135,7 @@ public class DefaultYoutubeTrackDetailsLoader implements YoutubeTrackDetailsLoad
     INFO_PRESENT,
     REQUIRES_LOGIN,
     DOES_NOT_EXIST,
-    CONTENT_CHECK_REQUIRED,
-    NON_EMBEDDABLE
+    CONTENT_CHECK_REQUIRED
   }
 
   protected String getUnplayableReason(JsonBrowser statusBlock) {
