@@ -78,11 +78,9 @@ public class DefaultYoutubeTrackDetailsLoader implements YoutubeTrackDetailsLoad
       return null;
     }
 
-    if (status == InfoStatus.REQUIRES_LOGIN) {
-      if (!RetryInnertube){
+    if (status == InfoStatus.REQUIRES_LOGIN && !RetryInnertube) {
         JsonBrowser trackInfo = loadTrackInfoFromInnertube(httpInterface, videoId, sourceManager, true);
         return loadBaseResponse(trackInfo, httpInterface, videoId, sourceManager, true);
-      }
       //throw new FriendlyException("This video requires age verification.", SUSPICIOUS, null);
     }
 
