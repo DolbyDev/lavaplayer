@@ -2,6 +2,7 @@ package com.sedmelluq.discord.lavaplayer.source.youtube;
 
 import com.sedmelluq.discord.lavaplayer.player.AudioPlayerManager;
 import com.sedmelluq.discord.lavaplayer.source.AudioSourceManager;
+import com.sedmelluq.discord.lavaplayer.tools.DataFormatTools;
 import com.sedmelluq.discord.lavaplayer.tools.ExceptionTools;
 import com.sedmelluq.discord.lavaplayer.tools.FriendlyException;
 import com.sedmelluq.discord.lavaplayer.tools.http.ExtendedHttpConfigurable;
@@ -34,7 +35,8 @@ import static com.sedmelluq.discord.lavaplayer.tools.FriendlyException.Severity.
 import static com.sedmelluq.discord.lavaplayer.tools.FriendlyException.Severity.SUSPICIOUS;
 
 /**
- * Audio source manager that implements finding Youtube videos or playlists based on an URL or ID.
+ * Audio source manager that implements finding Youtube videos or playlists
+ * based on an URL or ID.
  */
 public class YoutubeAudioSourceManager implements AudioSourceManager, HttpConfigurable {
   private static final Logger log = LoggerFactory.getLogger(YoutubeAudioSourceManager.class);
@@ -61,9 +63,12 @@ public class YoutubeAudioSourceManager implements AudioSourceManager, HttpConfig
 
   /**
    * Create an instance.
+   * 
    * @param allowSearch Whether to allow search queries as identifiers
-   * @param email Email of Google account to auth in, required for playing age restricted tracks
-   * @param password Password of Google account to auth in, required for playing age restricted tracks
+   * @param email       Email of Google account to auth in, required for playing
+   *                    age restricted tracks
+   * @param password    Password of Google account to auth in, required for
+   *                    playing age restricted tracks
    */
   public YoutubeAudioSourceManager(boolean allowSearch, String email, String password) {
     this(
@@ -76,8 +81,7 @@ public class YoutubeAudioSourceManager implements AudioSourceManager, HttpConfig
         new YoutubeSignatureCipherManager(),
         new DefaultYoutubePlaylistLoader(),
         new DefaultYoutubeLinkRouter(),
-        new YoutubeMixProvider()
-    );
+        new YoutubeMixProvider());
   }
 
   public YoutubeAudioSourceManager(
@@ -90,13 +94,17 @@ public class YoutubeAudioSourceManager implements AudioSourceManager, HttpConfig
       YoutubeSignatureResolver signatureResolver,
       YoutubePlaylistLoader playlistLoader,
       YoutubeLinkRouter linkRouter,
-      YoutubeMixLoader mixLoader
-  ) {
+      YoutubeMixLoader mixLoader) {
     httpInterfaceManager = HttpClientTools.createDefaultThreadLocalManager();
     accessTokenTracker = new YoutubeAccessTokenTracker(httpInterfaceManager, email, password);
     YoutubeHttpContextFilter youtubeHttpContextFilter = new YoutubeHttpContextFilter();
     youtubeHttpContextFilter.setTokenTracker(accessTokenTracker);
     httpInterfaceManager.setHttpContextFilter(youtubeHttpContextFilter);
+
+    if (!DataFormatTools.isNullOrEmpty(email) && !DataFormatTools.isNullOrEmpty(password)) {
+      // Prepare master token on startup
+      accessTokenTracker.updateMasterToken();
+    }
 
     this.allowSearch = allowSearch;
     this.trackDetailsLoader = trackDetailsLoader;
@@ -111,8 +119,7 @@ public class YoutubeAudioSourceManager implements AudioSourceManager, HttpConfig
     combinedHttpConfiguration = new MultiHttpConfigurable(Arrays.asList(
         httpInterfaceManager,
         searchResultLoader.getHttpConfiguration(),
-        searchMusicResultLoader.getHttpConfiguration()
-    ));
+        searchMusicResultLoader.getHttpConfiguration()));
   }
 
   public YoutubeTrackDetailsLoader getTrackDetailsLoader() {
@@ -124,7 +131,8 @@ public class YoutubeAudioSourceManager implements AudioSourceManager, HttpConfig
   }
 
   /**
-   * @param playlistPageCount Maximum number of pages loaded from one playlist. There are 100 tracks per page.
+   * @param playlistPageCount Maximum number of pages loaded from one playlist.
+   *                          There are 100 tracks per page.
    */
   public void setPlaylistPageCount(int playlistPageCount) {
     playlistLoader.setPlaylistPageCount(playlistPageCount);
@@ -213,8 +221,9 @@ public class YoutubeAudioSourceManager implements AudioSourceManager, HttpConfig
   /**
    * Loads a single track from video ID.
    *
-   * @param videoId ID of the YouTube video.
-   * @param mustExist True if it should throw an exception on missing track, otherwise returns AudioReference.NO_TRACK.
+   * @param videoId   ID of the YouTube video.
+   * @param mustExist True if it should throw an exception on missing track,
+   *                  otherwise returns AudioReference.NO_TRACK.
    * @return Loaded YouTube track.
    */
   public AudioItem loadTrackWithVideoId(String videoId, boolean mustExist) {
@@ -274,9 +283,8 @@ public class YoutubeAudioSourceManager implements AudioSourceManager, HttpConfig
     public AudioItem search(String query) {
       if (allowSearch) {
         return searchResultLoader.loadSearchResult(
-                query,
-                YoutubeAudioSourceManager.this::buildTrackFromInfo
-        );
+            query,
+            YoutubeAudioSourceManager.this::buildTrackFromInfo);
       }
       return null;
     }
@@ -285,9 +293,8 @@ public class YoutubeAudioSourceManager implements AudioSourceManager, HttpConfig
     public AudioItem searchMusic(String query) {
       if (allowSearch) {
         return searchMusicResultLoader.loadSearchMusicResult(
-                query,
-                YoutubeAudioSourceManager.this::buildTrackFromInfo
-        );
+            query,
+            YoutubeAudioSourceManager.this::buildTrackFromInfo);
       }
       return null;
     }
@@ -295,17 +302,21 @@ public class YoutubeAudioSourceManager implements AudioSourceManager, HttpConfig
     @Override
     public AudioItem anonymous(String videoIds) {
       try (HttpInterface httpInterface = getHttpInterface()) {
-        try (CloseableHttpResponse response = httpInterface.execute(new HttpGet("https://www.youtube.com/watch_videos?video_ids=" + videoIds))) {
+        try (CloseableHttpResponse response = httpInterface
+            .execute(new HttpGet("https://www.youtube.com/watch_videos?video_ids=" + videoIds))) {
           HttpClientTools.assertSuccessWithContent(response, "playlist response");
           HttpClientContext context = httpInterface.getContext();
-          // youtube currently transforms watch_video links into a link with a video id and a list id.
-          // because that's what happens, we can simply re-process with the redirected link
+          // youtube currently transforms watch_video links into a link with a video id
+          // and a list id.
+          // because that's what happens, we can simply re-process with the redirected
+          // link
           List<URI> redirects = context.getRedirectLocations();
           if (redirects != null && !redirects.isEmpty()) {
             return new AudioReference(redirects.get(0).toString(), null);
           } else {
             throw new FriendlyException("Unable to process youtube watch_videos link", SUSPICIOUS,
-                new IllegalStateException("Expected youtube to redirect watch_videos link to a watch?v={id}&list={list_id} link, but it did not redirect at all"));
+                new IllegalStateException(
+                    "Expected youtube to redirect watch_videos link to a watch?v={id}&list={list_id} link, but it did not redirect at all"));
           }
         }
       } catch (Exception e) {
