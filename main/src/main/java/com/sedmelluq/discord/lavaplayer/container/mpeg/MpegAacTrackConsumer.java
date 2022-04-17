@@ -14,8 +14,10 @@ import java.nio.channels.ClosedByInterruptException;
 import java.nio.channels.ReadableByteChannel;
 
 /**
- * Handles processing MP4 AAC frames. Passes the decoded frames to the specified frame consumer. Currently only AAC LC
- * format is supported, although the underlying decoder can handler other types as well.
+ * Handles processing MP4 AAC frames. Passes the decoded frames to the specified
+ * frame consumer. Currently only AAC LC
+ * format is supported, although the underlying decoder can handler other types
+ * as well.
  */
 public class MpegAacTrackConsumer implements MpegTrackConsumer {
   private static final Logger log = LoggerFactory.getLogger(MpegAacTrackConsumer.class);
@@ -24,10 +26,11 @@ public class MpegAacTrackConsumer implements MpegTrackConsumer {
   private final AacPacketRouter packetRouter;
 
   private ByteBuffer inputBuffer;
+  private boolean configured;
 
   /**
    * @param context Configuration and output information for processing
-   * @param track The MP4 audio track descriptor
+   * @param track   The MP4 audio track descriptor
    */
   public MpegAacTrackConsumer(AudioProcessingContext context, MpegTrackInfo track) {
     this.track = track;
@@ -60,9 +63,10 @@ public class MpegAacTrackConsumer implements MpegTrackConsumer {
     if (packetRouter.nativeDecoder == null) {
       packetRouter.nativeDecoder = new AacDecoder();
       inputBuffer = ByteBuffer.allocateDirect(4096);
+      configured = configureDecoder(packetRouter.nativeDecoder);
     }
 
-    if (configureDecoder(packetRouter.nativeDecoder)) {
+    if (configured) {
       processInput(channel, length);
     } else {
       if (packetRouter.embeddedDecoder == null) {

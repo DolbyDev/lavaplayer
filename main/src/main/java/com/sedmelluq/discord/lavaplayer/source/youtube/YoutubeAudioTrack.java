@@ -28,7 +28,7 @@ public class YoutubeAudioTrack extends DelegatedAudioTrack {
   private final YoutubeAudioSourceManager sourceManager;
 
   /**
-   * @param trackInfo Track info
+   * @param trackInfo     Track info
    * @param sourceManager Source manager which was used to find this track
    */
   public YoutubeAudioTrack(AudioTrackInfo trackInfo, YoutubeAudioSourceManager sourceManager) {
@@ -44,18 +44,18 @@ public class YoutubeAudioTrack extends DelegatedAudioTrack {
 
       log.debug("Starting track from URL: {}", format.signedUrl);
 
-      if (trackInfo.isStream) {
-        processStream(localExecutor, format, false);
-      } else if (format.details.getContentLength() == CONTENT_LENGTH_UNKNOWN) {
-        processStream(localExecutor, format, true);
+      if (trackInfo.isStream || format.details.getContentLength() == CONTENT_LENGTH_UNKNOWN) {
+        processStream(localExecutor, format);
       } else {
         processStatic(localExecutor, httpInterface, format);
       }
     }
   }
 
-  private void processStatic(LocalAudioTrackExecutor localExecutor, HttpInterface httpInterface, FormatWithUrl format) throws Exception {
-    try (YoutubePersistentHttpStream stream = new YoutubePersistentHttpStream(httpInterface, format.signedUrl, format.details.getContentLength())) {
+  private void processStatic(LocalAudioTrackExecutor localExecutor, HttpInterface httpInterface, FormatWithUrl format)
+      throws Exception {
+    try (YoutubePersistentHttpStream stream = new YoutubePersistentHttpStream(httpInterface, format.signedUrl,
+        format.details.getContentLength())) {
       if (format.details.getType().getMimeType().endsWith("/webm")) {
         processDelegate(new MatroskaAudioTrack(trackInfo, stream), localExecutor);
       } else {
@@ -64,12 +64,14 @@ public class YoutubeAudioTrack extends DelegatedAudioTrack {
     }
   }
 
-  private void processStream(LocalAudioTrackExecutor localExecutor, FormatWithUrl format, boolean staticStream) throws Exception {
+  private void processStream(LocalAudioTrackExecutor localExecutor, FormatWithUrl format, boolean staticStream)
+      throws Exception {
     if (MIME_AUDIO_WEBM.equals(format.details.getType().getMimeType())) {
       throw new FriendlyException("YouTube WebM streams are currently not supported.", COMMON, null);
     } else {
       try (HttpInterface streamingInterface = sourceManager.getHttpInterface()) {
-        processDelegate(new YoutubeMpegStreamAudioTrack(trackInfo, streamingInterface, format.signedUrl, staticStream), localExecutor);
+        processDelegate(new YoutubeMpegStreamAudioTrack(trackInfo, streamingInterface, format.signedUrl,
+            format.details.getContentLength()), localExecutor);
       }
     }
   }

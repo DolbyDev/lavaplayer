@@ -76,6 +76,33 @@ public class YoutubeConstants {
     static final String TOKEN_PAYLOAD = TOKEN_BASE_PAYLOAD + CLOSE_TOKEN_BASE_PAYLOAD;
     static final String TOKEN_REFRESH_PAYLOAD = TOKEN_BASE_PAYLOAD + REFRESH_PART_PAYLOAD + CLOSE_TOKEN_BASE_PAYLOAD;
 
+    <<<<<<<HEAD=======
+    // YouTube TV auth constants
+    static final String TV_AUTH_BASE_URL = YOUTUBE_ORIGIN + "/o/oauth2";
+    static final String TV_AUTH_SCOPE = "http://gdata.youtube.com https://www.googleapis.com/auth/youtube-paid-content";
+    static final String TV_AUTH_MODEL_NAME = "ytlr::";
+
+    static final String TV_AUTH_CODE_URL = TV_AUTH_BASE_URL + "/device/code";
+    static final String TV_AUTH_CODE_PAYLOAD = "{\"client_id\":\"%s\",\"device_id\":\"%s\",\"scope\":\"" + TV_AUTH_SCOPE
+            + "\",\"model_name\":\"" + TV_AUTH_MODEL_NAME + "\"}";
+    static final String TV_AUTH_TOKEN_URL = TV_AUTH_BASE_URL + "/token";
+    static final String TV_AUTH_TOKEN_PAYLOAD = "{\"client_id\":\"%s\",\"client_secret\":\"%s\",\"code\":\"%s\",\"grant_type\":\"http://oauth.net/grant_type/device/1.0\"}";
+    static final String TV_AUTH_TOKEN_REFRESH_PAYLOAD = "{\"client_id\":\"%s\",\"client_secret\":\"%s\",\"refresh_token\":\"%s\",\"grant_type\":\"refresh_token\"}";
+
+    // Android auth constants
+    static final String ANDROID_AUTH_URL = "https://android.googleapis.com/auth";
+    static final String MASTER_TOKEN_BASE_URL = "https://youtube.minerea.su"; // https://github.com/Walkyst/YouTube-checkin
+    static final String TOKEN_BASE_PAYLOAD = "{\"email\":\"%s\",\"password\":\"%s\"";
+    static final String REFRESH_PART_PAYLOAD = ",\"refresh_token\":\"%s\"";
+    static final String CLOSE_TOKEN_BASE_PAYLOAD = "}";
+
+    static final String CHECKIN_ACCOUNT_URL = MASTER_TOKEN_BASE_URL + "/checkin";
+    static final String LOGIN_ACCOUNT_URL = MASTER_TOKEN_BASE_URL + "/login";
+    static final String SAVE_ACCOUNT_URL = MASTER_TOKEN_BASE_URL + "/tv";
+    static final String TOKEN_PAYLOAD = TOKEN_BASE_PAYLOAD + CLOSE_TOKEN_BASE_PAYLOAD;
+    static final String TOKEN_REFRESH_PAYLOAD = TOKEN_BASE_PAYLOAD + REFRESH_PART_PAYLOAD + CLOSE_TOKEN_BASE_PAYLOAD;
+
+    >>>>>>>custom
     // Utility constants
     static final String WATCH_URL_PREFIX = YOUTUBE_ORIGIN + "/watch?v=";
 }
