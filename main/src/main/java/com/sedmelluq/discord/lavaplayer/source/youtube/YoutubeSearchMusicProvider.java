@@ -83,7 +83,7 @@ public class YoutubeSearchMusicProvider implements YoutubeSearchMusicResultLoade
     if (tracks.isEmpty()) {
       return AudioReference.NO_TRACK;
     } else {
-      return new BasicAudioPlaylist("Search results for: " + query, tracks, null, true);
+      return new BasicAudioPlaylist("Search results for: " + query, null, null, null, tracks, null, true);
     }
   }
 
