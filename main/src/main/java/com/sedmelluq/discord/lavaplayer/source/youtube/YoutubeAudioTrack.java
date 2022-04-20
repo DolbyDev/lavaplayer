@@ -28,7 +28,7 @@ public class YoutubeAudioTrack extends DelegatedAudioTrack {
   private final YoutubeAudioSourceManager sourceManager;
 
   /**
-   * @param trackInfo     Track info
+   * @param trackInfo Track info
    * @param sourceManager Source manager which was used to find this track
    */
   public YoutubeAudioTrack(AudioTrackInfo trackInfo, YoutubeAudioSourceManager sourceManager) {
@@ -52,10 +52,8 @@ public class YoutubeAudioTrack extends DelegatedAudioTrack {
     }
   }
 
-  private void processStatic(LocalAudioTrackExecutor localExecutor, HttpInterface httpInterface, FormatWithUrl format)
-      throws Exception {
-    try (YoutubePersistentHttpStream stream = new YoutubePersistentHttpStream(httpInterface, format.signedUrl,
-        format.details.getContentLength())) {
+  private void processStatic(LocalAudioTrackExecutor localExecutor, HttpInterface httpInterface, FormatWithUrl format) throws Exception {
+    try (YoutubePersistentHttpStream stream = new YoutubePersistentHttpStream(httpInterface, format.signedUrl, format.details.getContentLength())) {
       if (format.details.getType().getMimeType().endsWith("/webm")) {
         processDelegate(new MatroskaAudioTrack(trackInfo, stream), localExecutor);
       } else {
@@ -64,21 +62,19 @@ public class YoutubeAudioTrack extends DelegatedAudioTrack {
     }
   }
 
-  private void processStream(LocalAudioTrackExecutor localExecutor, FormatWithUrl format, boolean staticStream)
-      throws Exception {
+  private void processStream(LocalAudioTrackExecutor localExecutor, FormatWithUrl format) throws Exception {
     if (MIME_AUDIO_WEBM.equals(format.details.getType().getMimeType())) {
       throw new FriendlyException("YouTube WebM streams are currently not supported.", COMMON, null);
     } else {
       try (HttpInterface streamingInterface = sourceManager.getHttpInterface()) {
-        processDelegate(new YoutubeMpegStreamAudioTrack(trackInfo, streamingInterface, format.signedUrl,
-            format.details.getContentLength()), localExecutor);
+        processDelegate(new YoutubeMpegStreamAudioTrack(trackInfo, streamingInterface, format.signedUrl, format.details.getContentLength()), localExecutor);
       }
     }
   }
 
   private FormatWithUrl loadBestFormatWithUrl(HttpInterface httpInterface) throws Exception {
     YoutubeTrackDetails details = sourceManager.getTrackDetailsLoader()
-        .loadDetails(httpInterface, getIdentifier(), true, sourceManager);
+            .loadDetails(httpInterface, getIdentifier(), true, sourceManager);
 
     // If the error reason is "Video unavailable" details will return null
     if (details == null) {
@@ -90,7 +86,7 @@ public class YoutubeAudioTrack extends DelegatedAudioTrack {
     YoutubeTrackFormat format = findBestSupportedFormat(formats);
 
     URI signedUrl = sourceManager.getSignatureResolver()
-        .resolveFormatUrl(httpInterface, details.getPlayerScript(), format);
+            .resolveFormatUrl(httpInterface, details.getPlayerScript(), format);
 
     return new FormatWithUrl(format, signedUrl);
   }
