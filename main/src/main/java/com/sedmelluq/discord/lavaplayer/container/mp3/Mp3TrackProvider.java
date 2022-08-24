@@ -362,11 +362,6 @@ public class Mp3TrackProvider implements AudioTrackInfoProvider {
     return null;
   }
 
-  @Override
-  public String getISRC() {
-    return null;
-  }
-
   private static class FrameHeader {
     private final String id;
     private final int size;

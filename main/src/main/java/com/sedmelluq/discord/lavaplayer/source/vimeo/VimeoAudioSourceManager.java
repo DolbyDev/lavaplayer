@@ -142,8 +142,7 @@ public class VimeoAudioSourceManager implements AudioSourceManager, HttpConfigur
         trackUrl,
         false,
         trackUrl,
-        config.get("thumbnail").get("src").text(),
-        null
+        config.get("thumbnail").get("src").text()
     ), this);
   }
 }

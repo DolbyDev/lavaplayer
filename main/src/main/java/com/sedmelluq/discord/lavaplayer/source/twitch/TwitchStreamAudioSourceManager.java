@@ -99,8 +99,7 @@ public class TwitchStreamAudioSourceManager implements AudioSourceManager, HttpC
           reference.identifier,
           true,
           reference.identifier,
-          thumbnail,
-          null
+          thumbnail
       ), this);
     }
   }

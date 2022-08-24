@@ -35,7 +35,6 @@ public class AudioTrackInfo {
   /**
    * International Standard Recording Code
    */
-  public final String isrc;
 
   /**
    * @param title Track title
@@ -45,9 +44,8 @@ public class AudioTrackInfo {
    * @param isStream True if this track is a stream
    * @param uri URL of the track or path to its file.
    * @param artworkUrl Thumbnail of the track
-   * @param isrc International Standard Recording Code
    */
-  public AudioTrackInfo(String title, String author, long length, String identifier, boolean isStream, String uri, String artworkUrl, String isrc) {
+  public AudioTrackInfo(String title, String author, long length, String identifier, boolean isStream, String uri, String artworkUrl) {
     this.title = title;
     this.author = author;
     this.length = length;
@@ -55,7 +53,6 @@ public class AudioTrackInfo {
     this.isStream = isStream;
     this.uri = uri;
     this.artworkUrl = artworkUrl;
-    this.isrc = isrc;
   }
 
   /**
@@ -67,6 +64,6 @@ public class AudioTrackInfo {
    * @param uri URL of the track or path to its file.
    */
   public AudioTrackInfo(String title, String author, long length, String identifier, boolean isStream, String uri) {
-    this(title, author, length, identifier, isStream, uri, null, null);
+    this(title, author, length, identifier, isStream, uri, null);
   }
 }

@@ -87,10 +87,6 @@ public class MpegTsElementaryInputStream extends InputStream {
         return null;
       }
 
-      @Override
-      public String getISRC() {
-        return null;
-      }
     };
   }
 

@@ -110,7 +110,7 @@ public class YoutubeMixProvider implements YoutubeMixLoader {
       String uri = WATCH_URL_PREFIX + identifier;
 
       AudioTrackInfo trackInfo = new AudioTrackInfo(title, author, duration, identifier, false, uri,
-              PBJUtils.getYouTubeThumbnail(renderer, identifier), null);
+              PBJUtils.getYouTubeThumbnail(renderer, identifier));
       tracks.add(trackFactory.apply(trackInfo));
     }
   }

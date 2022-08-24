@@ -76,8 +76,7 @@ public class BeamAudioSourceManager implements AudioSourceManager, HttpConfigura
           id + "|" + streamName + "|" + reference.identifier,
           true,
           "https://beam.pro/" + streamName,
-          thumbnailUrl,
-          null
+          thumbnailUrl
       ), this);
     }
   }
